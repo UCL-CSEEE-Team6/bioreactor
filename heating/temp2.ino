@@ -1,3 +1,5 @@
+//http://www.circuitbasics.com/arduino-thermistor-temperature-sensor-tutorial/
+
 int ThermistorPin = 0;
 int Vo;
 float R1 = 10000;
