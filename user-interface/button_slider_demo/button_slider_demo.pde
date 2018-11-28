@@ -1,7 +1,7 @@
 import controlP5.*;
 ControlP5 controlP5;
 
-color [] colors = new color[7];
+color [] colors = new color [7];
 
 int width = 1280;
 int height = 720;

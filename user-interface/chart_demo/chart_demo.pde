@@ -12,7 +12,6 @@ void setup() {
   size(1280, 720);
   smooth();
   controlP5 = new ControlP5(this);
-  controlP5 = new ControlP5(this);
   controlP5.printPublicMethodsFor(Chart.class);
   myChart = controlP5.addChart("hello").setPosition(50, 50).setSize(400, 400).setRange(-20, 20).setView(Chart.BAR);
   myChart.addDataSet("world");
