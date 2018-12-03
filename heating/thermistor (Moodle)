@@ -1,0 +1,23 @@
+#include <math.h>
+void setup() {
+  Serial.begin(9600);   //Set the Serial port at 9600 baud rate
+}
+//Use the Steinhart-Hart equation to convert to degrees C
+double getTemperature(int rawADC) {
+  rawADC -= 200; // Modify the input value to calibrate the temperature.
+  double temp;
+  temp = log(((10240000/rawADC) - 10000));
+  temp = 1 / (0.001129148 +
+   (0.000234125 + (0.0000000876741 * temp * temp ))* temp );
+  return temp - 273.15; // Convert Kelvin to Celsius
+  //return (temp * 9.0)/ 5.0 + 32.0; // Celsius to Fahrenheit
+}
+void loop() {
+  int input;
+  double temperature;
+  input = analogRead(A0);
+  temperature = getTemperature(input);
+  Serial.println(temperature);
+  delay(1000);
+}
+
