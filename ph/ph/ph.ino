@@ -23,12 +23,12 @@ void loop() {
   int T = ;//This will get information from Temperature Team
   int ln = log(10)/log(2.71828);
   float phX = phS + (F*Es-F*Ex)/(R*T*ln);
-  Serial.println(phX);
+  Serial.println("ph:",phX);
   str[]=Serial.read();
-  if (str[]=="") acid=True;
-  if (str[]=="") acid=False;
-  if (str[]=="") alkali=True;
-  if (str[]=="") alkali=False;
+  if (str[]=="" || phX <= ) acid=True;
+  if (str[]=="" && phX >= ) acid=False;
+  if (str[]=="" || phX >= ) alkali=True;
+  if (str[]=="" && phX <= ) alkali=False;
   if (acid==True) digitalWrite(pump1,HIGH);
   if (acid==False) digitalWrite(pump1,LOW);
   if (alkali==True) digitalWrite(pump2,HIGH);
