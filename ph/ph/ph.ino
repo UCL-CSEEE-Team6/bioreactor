@@ -4,7 +4,7 @@
 #define Es 512  //Electrical potential at reference or standard electrode
 #define F 9.6485309*10000 //Faraday constant
 #define R 8.314510 //universal gas constant
-#define pump1  //pinNum of pump for acid
+#define pump1 13 //pinNum of pump for acid
 #define pump2  //pinNum of pump for alkali
 #define voltageSupply  //pinNum of voltage supply of 1.024V
 #define tmp  //pinNum for temperature input
@@ -17,6 +17,8 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   pinMode(ph,OUTPUT);
+  pinMode(pump1,OUTPUT);
+  pinMode(pump2,OUTPUT);
   analogWrite(voltageSupply,210);
 }
 
