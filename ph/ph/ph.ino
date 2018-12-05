@@ -10,6 +10,7 @@
 
 bool acid;
 bool alkali;
+int phv;
 
 void setup() {
   // put your setup code here, to run once:
@@ -21,7 +22,9 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   char str;
-  float Ex = analogRead(ph)*5000/1023;
+  int phx=analogRead(ph);
+  if (phx>50) phv=phx;
+  float Ex = phv*5000/1023;
   int T = ;//This will get information from Temperature Team
   float ln = log(10)/log(2.71828);
   float phX = phS + (F*Es-F*Ex)/(R*T*ln);
@@ -29,8 +32,10 @@ void loop() {
   str=Serial.read();
   if (str=='' || phX >= 5.5) acid=True;
   if (str=='' && phX <= 5.2) acid=False;
-  if (str=='' || phX <= 4。5) alkali=True;
+  if (str=='' || phX <= 4.5) alkali=True;
   if (str=='' && phX >= 4.8) alkali=False;
+  Serial.println("acid:",acid);
+  Serial.println("alkali:",alkali);
   if (acid==True) digitalWrite(pump1,HIGH);
   if (acid==False) digitalWrite(pump1,LOW);
   if (alkali==True) digitalWrite(pump2,HIGH);
