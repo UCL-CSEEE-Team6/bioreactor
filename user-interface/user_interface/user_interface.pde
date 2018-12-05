@@ -47,6 +47,10 @@ int speedLowerBound = 0;
 int speedUpperBound = 2000;
 int speedAdjustInterval = 100;
 
+//declare Serial Port
+Serial heatingPort = new Serial(this, "COM4", 9600);
+Serial stirringPort = new Serial(this, "COM2", 9600);
+
 void setup () {
   //init window
   size(1280, 800);
@@ -185,21 +189,28 @@ void heatingUserControl () {
 }
 
 void startHeating () {
-  // do something to activate the heating module
+  heatingPort.write("start-heating");
+  
 }
 
 void endHeating () {
-  // do something to stop heating
+  heatingPort.write("stop-heating");
+  
 }
 
 boolean changeHeatingTemperature (float newTemperatureValue) {
-  // how to change heating Temperature
-  return true; // if changing temperature successful return true otherwise return false
+  heatingPort.write("change-temperature");
+  heatingPort.write(str(newTemperatureValue));
+  String changeStatus = trim(heatingPort.readStringUntil('\n'));
+  if (changeStatus == "true") return true;
+  else return false; // if changing temperature successful return true otherwise return false
 }
 
 float queryHeatingTemperature () {
-  float currentTemperature = sin(frameCount * 0.01) * 50 + (heatLowerBound + heatUpperBound) / 2; // random demo stuff nvm
-  // return value of temperature
+  //float currentTemperature = sin(frameCount * 0.01) * 50 + (heatLowerBound + heatUpperBound) / 2; // random demo stuff nvm
+  heatingPort.write("temperature-check");
+  String temperatureString = trim(heatingPort.readStringUntil('\n'));
+  float currentTemperature = float(temperatureString);
   return currentTemperature;
 }
 
@@ -210,12 +221,12 @@ void endStirring () {
 }
 
 boolean changeStirringSpeed (float newStirringSpeed) {
-  
-  return true;
+  // how to change stirring speed 
+  return true; // if successful return true otherwise return false
 }
 
 float queryStirringSpeed () {
-  float currentSpeed = sin(frameCount * 0.01) * 40 + (speedLowerBound + speedUpperBound) / 2;
+  float currentSpeed = sin(frameCount * 0.01) * 40 + (speedLowerBound + speedUpperBound) / 2; // random demo stuff nvm
   //return value of stirring speed
   return currentSpeed;
 }
