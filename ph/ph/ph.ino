@@ -21,7 +21,7 @@ void loop() {
   char str[];
   int Ex = analogRead(ph);
   int T = ;//This will get information from Temperature Team
-  int ln = log(10)/log(2.71828);
+  float ln = log(10)/log(2.71828);
   float phX = phS + (F*Es-F*Ex)/(R*T*ln);
   Serial.println("ph:",phX);
   str[]=Serial.read();
