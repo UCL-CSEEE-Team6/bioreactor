@@ -22,8 +22,8 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   char str;
-  int phx=analogRead(ph);
-  if (phx>50) phv=phx;
+  int phY=analogRead(ph);
+  if (phY>50) phv=phY;
   float Ex = phv*5000/1023;
   int T = ;//This will get information from Temperature Team
   float ln = log(10)/log(2.71828);
