@@ -1,11 +1,11 @@
 int thermistorPin = 0;
-int transistorPin = 9;
+int transistorPin = 13;
 int pushButton = 5;
-int red = 2; // red LED indicates heating
 int Vo;
 float R1 = 9940;
 float logR2, R2, temperature;
 float c1 = 0.00180018234165587, c2 = 0.000125303859529376, c3 =5.10399949700750e-07;
+
 
 void setup() {
 Serial.begin(9600);
@@ -13,6 +13,17 @@ pinMode(thermistorPin, INPUT);
 pinMode(transistorPin, OUTPUT);
 pinMode(pushButton, INPUT);
 pinMode(red, OUTPUT);
+}
+
+void loop() {
+  mainControllerHeating();
+//Check whether to turn on the heater
+  if((temperature <= 28.00) || (digitalRead(pushButton) == HIGH)){
+    startHeating();
+  }
+  else if(temperature >= 32.00){
+    endHeating();
+  }
 }
 
 double getTemperature(){
@@ -33,7 +44,6 @@ float queryHeatingTemperature(){
 
 void startHeating(){
   digitalWrite(transistorPin, HIGH);
-  digitalWrite(red, HIGH);
 }
 
 void endHeating(){
@@ -41,7 +51,14 @@ void endHeating(){
 }
 
 boolean changeHeatingTemperature (float newTemperatureValue){
-  if (newTemperatureValue == 30.00){
+  queryHeatingTemperature();
+  while (newTemperatureValue > queryHeatingTemperature()){
+    startHeating();
+  }
+  while (newTemperatureValue < queryHeatingTemperature()){
+    endHeating();
+  }
+  if (queryHeatingTemperature() == newTemperatureValue){
     return true;
   }
   else{
@@ -49,17 +66,29 @@ boolean changeHeatingTemperature (float newTemperatureValue){
   }
 }
 
-void loop() {
-  
-//Check whether to turn on the heater
-  if((temperature <= 28.00) || (digitalRead(pushButton) == HIGH)){
+void mainControllerHeating () {
+  String controlSignal;
+  double newTemperature;
+  if (Serial.available()) {
+    controlSignal = Serial.read();
+  }
+  if (controlSignal == "change-temperature") {
+    newTemperature = Serial.read();
+    changeHeatingTemperature(newTemperature);
+    if ((changeHeatingTemperature(newTemperature)) == true){
+      Serial.print("TRUE");
+    }
+    else if ((changeHeatingTemperature(newTemperature)) == false){
+      Serial.print("FALSE");
+    }
+  }
+  else if (controlSignal == "temperature-check") {
+    Serial.print(queryHeatingTemperature());
+  }
+  else if (controlSignal == "start-heating"){
     startHeating();
   }
-  else if(temperature >= 32.00){
+  else if (controlSignal == "end-heating"){
     endHeating();
   }
-  queryHeatingTemperature();
-  changeHeatingTemperature (queryHeatingTemperature());
-
-  delay(500);
 }
