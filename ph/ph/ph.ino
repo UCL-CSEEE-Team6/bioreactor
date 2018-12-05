@@ -27,9 +27,9 @@ void loop() {
   float phX = phS + (F*Es-F*Ex)/(R*T*ln);
   Serial.println("ph:",phX);
   str=Serial.read();
-  if (str=='' || phX >= 6) acid=True;
+  if (str=='' || phX >= 5.5) acid=True;
   if (str=='' && phX <= 5.2) acid=False;
-  if (str=='' || phX <= 4) alkali=True;
+  if (str=='' || phX <= 4。5) alkali=True;
   if (str=='' && phX >= 4.8) alkali=False;
   if (acid==True) digitalWrite(pump1,HIGH);
   if (acid==False) digitalWrite(pump1,LOW);
