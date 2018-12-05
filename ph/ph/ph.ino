@@ -7,6 +7,7 @@
 #define pump1  //pinNum of pump for acid
 #define pump2  //pinNum of pump for alkali
 #define voltageSupply  //pinNum of voltage supply of 1.024V
+#define tmp  //pinNum for temperature input
 
 bool acid;
 bool alkali;
@@ -19,13 +20,24 @@ void setup() {
   analogWrite(voltageSupply,210);
 }
 
+double getTemp(int i)
+{
+  i=i-200;
+  double temp;
+  temp = log(((10240000/i)-10000));
+  temp = 1/(0,001129148 + (0.000234125+(0.0000000876741 * temp * temp)) * temp);
+  return temp;
+}
+
 void loop() {
   // put your main code here, to run repeatedly:
   char str;
   int phY=analogRead(ph);
   if (phY>50) phv=phY;
   float Ex = phv*5000/1023;
-  int T = ;//This will get information from Temperature Team
+  int T = getTemp(analogRead(tmp)); //This will get information from Temperature Team
+  Serial.print("temp");
+  Serial.println(T);
   float ln = log(10)/log(2.71828);
   float phX = phS + (F*Es-F*Ex)/(R*T*ln);
   Serial.print("ph:");
