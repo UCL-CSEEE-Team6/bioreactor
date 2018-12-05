@@ -28,16 +28,19 @@ void loop() {
   int T = ;//This will get information from Temperature Team
   float ln = log(10)/log(2.71828);
   float phX = phS + (F*Es-F*Ex)/(R*T*ln);
-  Serial.println("ph:",phX);
+  Serial.print("ph:");
+  Serial.println(phX);
   str=Serial.read();
-  if (str=='' || phX >= 5.5) acid=True;
-  if (str=='' && phX <= 5.2) acid=False;
-  if (str=='' || phX <= 4.5) alkali=True;
-  if (str=='' && phX >= 4.8) alkali=False;
-  Serial.println("acid:",acid);
-  Serial.println("alkali:",alkali);
-  if (acid==True) digitalWrite(pump1,HIGH);
-  if (acid==False) digitalWrite(pump1,LOW);
-  if (alkali==True) digitalWrite(pump2,HIGH);
-  if (alkali==False) digitalWrite(pump2,LOW);
+  if (str==' ' || phX >= 5.5) acid=true;
+  if (str==' ' && phX <= 5.2) acid=false;
+  if (str==' ' || phX <= 4.5) alkali=true;
+  if (str==' ' && phX >= 4.8) alkali=false;
+  Serial.print("acid:");
+  Serial.println(acid);
+  Serial.print("alkali:");
+  Serial.print(alkali);
+  if (acid==true) digitalWrite(pump1,HIGH);
+  if (acid==false) digitalWrite(pump1,LOW);
+  if (alkali==true) digitalWrite(pump2,HIGH);
+  if (alkali==false) digitalWrite(pump2,LOW);
 }
