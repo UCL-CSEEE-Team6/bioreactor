@@ -1,0 +1,55 @@
+
+const int dataIN = 2; //IR sensor INPUT
+const byte motorControl = 9;  //motor sensor 
+
+unsigned long prevmillis; // To store time
+unsigned long duration; // To store time difference
+unsigned long refresh; // To store time for refresh of reading
+
+int rpm; // RPM value
+int V; // motor speed
+
+boolean currentstate; // Current state of IR input scan
+boolean prevstate; // State of IR sensor in previous scan
+
+void setup()
+{
+  pinMode(dataIN,INPUT);    
+  pinMode(motorControl, OUTPUT);    
+  V = 50;
+  prevmillis = 0;
+  prevstate = LOW;  
+  Serial.begin(9600);
+}
+
+void loop()
+{
+ // start motor 
+ analogWrite(motorControl,V);
+ 
+ // RPM Measurement
+  currentstate = digitalRead(dataIN); // Read IR sensor state
+ if( prevstate != currentstate) // If there is change in input
+   {
+     if( currentstate == HIGH ) // If input only changes from LOW to HIGH
+       {
+         duration = ( micros() - prevmillis ); // Time difference between revolution in microsecond
+         rpm = (60000000/duration); // rpm = (1/ time millis)*1000*1000*60;
+         prevmillis = micros(); // store time for nect revolution calculation
+       }
+   }
+  prevstate = currentstate; // store this scan (prev scan) data for next scan
+  Serial.println(rpm);
+
+  // change the motor speed
+
+     if(rpm < 1000)
+     {
+        V = V+20; // approach wanted value quick
+     }
+     else if (rpm > 1050)  // give it a range cuz dont know how accurate the code will be
+     {
+        V = V--;  // slowly get to the correct value
+     }
+     
+}
