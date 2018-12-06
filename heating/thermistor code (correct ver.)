@@ -1,6 +1,6 @@
 int ThermistorPin = 0;
 int Vo;
-float R1 = 10000;
+float R1 = 9940;
 float logR2, R2, T;
 float c1 = 0.000650333285226053, c2 = 0.000780888672114694, c3 = -9.25430040536406e-06;
 
