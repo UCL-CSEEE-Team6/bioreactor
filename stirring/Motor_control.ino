@@ -1,11 +1,13 @@
 const byte motorControl = 9;
 double count;
-int val = 0;
 const byte interruptPin = 2;
 unsigned long timeold;
 unsigned int rpm;
 unsigned int realrpm;
 int data;
+int value;
+String val;
+String newSpeed;
 
 void setup() {
   Serial.begin(9600);
@@ -20,29 +22,46 @@ void setup() {
 }
 
 void loop() {
-  if(Serial.available())
+  analogWrite(motorControl,data);
+  if(Serial.available()>0)
   {
-    val=Serial.read();
-    Serial.println(val);
+    val=Serial.readStringUntil('\n');
+    value = val.toInt();
+    Serial.println(value);
   }
-  if (realrpm > (val+20)){
+  if(val=="start-stirring"){
+    data = 29;
+  }
+  else if (val == "end-stirring"){
+    data = 0;
+  }
+  else if(val == "change-speed"){
+    newSpeed = Serial.readStringUntil('\n');
+    if (newSpeed.toInt()==500){
+      data=29;
+    }
+    else if (newSpeed.toInt()==1000){
+      data=42;
+    }
+    if (newSpeed.toInt()==1500){
+      data=52;
+    }
+  }
+  else if (val == "stirring-check" ){
+    Serial.println(realrpm);
+  }
+ /* if (realrpm > (value+20)){
     data = data - 1;
-    analogWrite(motorControl,data);
   }
-  else if (realrpm < (val-20)){
+  else if (realrpm < (value-20)){
     data = data + 1;
-    analogWrite(motorControl,data);
-  }
-  else{
-    analogWrite(motorControl,data);
-  }
-  //analogWrite(motorControl,250);
-  if (count >= 50){
+  }*/
+  if (count >= 30){
     rpm = count/(millis()-timeold)*60*1000;
     timeold = millis();
     count = 0;
-    realrpm=rpm;
-    //Serial.println(realrpm);
+    realrpm=1.93*rpm;
+    Serial.println(realrpm);
   }
 }
 
