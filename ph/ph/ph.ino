@@ -45,7 +45,7 @@ void loop() {
   Serial.print("temp:");
   Serial.println(T);
   float ln = log(10)/log(2.71828);
-  float phX = phS + ((Es-Ex)*0.001*F)/(R*T*ln);
+  float phX = phS + ((1/2*Es-Ex)*0.001*F)/(R*T*ln);
   Serial.print("ph:");
   Serial.println(phX);
   str=Serial.read();
