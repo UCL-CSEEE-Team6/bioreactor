@@ -35,21 +35,27 @@ Slider temperatureSlider;
 float prevTemperatureValue;
 Chart temperatureChart;
 
+boolean toggleStirring;
+boolean prevToggleStirring = false;
+Slider speedSlider;
+float prevSpeedValue;
+Chart speedChart;
+
 //declare sensor constants
 int queryGap = 50;
 int lastQueryTime = -50;
 
 //declare TBD constants
-int heatLowerBound = 30;
-int heatUpperBound = 100;
-int heatAdjustInterval = 5;
-int speedLowerBound = 0;
-int speedUpperBound = 2000;
-int speedAdjustInterval = 100;
+int heatLowerBound = 28;
+int heatUpperBound = 35;
+int heatAdjustInterval = 1;
+int speedLowerBound = 600;
+int speedUpperBound = 1400;
+int speedAdjustInterval = 400;
 
 //declare Serial Port
-Serial heatingPort = new Serial(this, "COM4", 9600);
-Serial stirringPort = new Serial(this, "COM2", 9600);
+//Serial heatingPort = new Serial(this, "COM4", 9600);
+//Serial stirringPort = new Serial(this, "COM2", 9600);
 
 void setup () {
   //init window
@@ -73,9 +79,11 @@ void setup () {
   
   //init buttons and controls
   initHeatingControls();
+  initStirringControls();
   
   //init graph
   initHeatingChart();
+  initStirringChart();
 }
 
 void initConsole() {
@@ -113,6 +121,24 @@ void initHeatingControls () {
   prevTemperatureValue = heatLowerBound;
 }
 
+void initStirringControls () {
+  cp5.addToggle("toggleStirring")
+    .setValue(false)
+    .setPosition(initWidth + 10, textHeight + sectionHeight + 50)
+    .setSize(100, 100)
+    .setCaptionLabel("Toggle Stirring");
+  prevToggleHeating = false;
+  speedSlider = cp5.addSlider("speedSlider")
+    .setPosition(initWidth + 175, textHeight + sectionHeight)
+    .setSize(20, 200)
+    .setRange(speedLowerBound, speedUpperBound)
+    .setValue(speedLowerBound)
+    .setNumberOfTickMarks( (speedUpperBound - speedLowerBound) / speedAdjustInterval + 1)
+    .showTickMarks(true)
+    .setCaptionLabel("Adjust Speed");
+  prevSpeedValue = speedLowerBound;
+}
+
 void initHeatingChart () {
   temperatureChart = cp5.addChart("temperatureChart")
                         .setPosition(initWidth + 225, textHeight)
@@ -123,6 +149,18 @@ void initHeatingChart () {
                         .setStrokeWeight(10);
   temperatureChart.addDataSet("temperature");
   temperatureChart.setData("temperature", heatLowerBound - 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+}
+
+void initStirringChart () {
+  speedChart = cp5.addChart("speedChart")
+                        .setPosition(initWidth + 225, textHeight + sectionHeight)
+                        .setSize(700, sectionHeight - 50)
+                        .setRange(speedLowerBound - 100, speedUpperBound + 100)
+                        .setView(Chart.LINE)
+                        .setCaptionLabel("")
+                        .setStrokeWeight(10);
+  speedChart.addDataSet("speed");
+  speedChart.setData("speed", speedLowerBound - 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 void draw () {
@@ -148,7 +186,8 @@ void drawTimer () {
 
 void drawSensorData () {
   if (millis() - lastQueryTime > queryGap) {
-      drawTemperatureSensorData ();
+      drawTemperatureSensorData();
+      drawSpeedSensorData();
       lastQueryTime = millis();
   }
 }
@@ -157,8 +196,13 @@ void drawTemperatureSensorData () {
   temperatureChart.unshift("temperature", (int)queryHeatingTemperature());
 }
 
+void drawSpeedSensorData () {
+  speedChart.unshift("speed", (int)queryStirringSpeed());
+}
+
 void monitorUserControl () {
   heatingUserControl();
+  stirringUserControl();
 }
 
 void heatingUserControl () {
@@ -189,45 +233,79 @@ void heatingUserControl () {
 }
 
 void startHeating () {
-  heatingPort.write("start-heating");
-  
+  //heatingPort.write("start-heating");
 }
 
 void endHeating () {
-  heatingPort.write("stop-heating");
-  
+  //heatingPort.write("stop-heating");
 }
 
 boolean changeHeatingTemperature (float newTemperatureValue) {
-  heatingPort.write("change-temperature");
-  heatingPort.write(str(newTemperatureValue));
-  String changeStatus = trim(heatingPort.readStringUntil('\n'));
-  if (changeStatus == "true") return true;
-  else return false; // if changing temperature successful return true otherwise return false
+  //heatingPort.write("change-temperature");
+  //heatingPort.write(str(newTemperatureValue));
+  //String changeStatus = trim(heatingPort.readStringUntil('\n'));
+  //if (changeStatus == "true") return true;
+  //else return false; // if changing temperature successful return true otherwise return false
+  return true;
 }
 
 float queryHeatingTemperature () {
-  //float currentTemperature = sin(frameCount * 0.01) * 50 + (heatLowerBound + heatUpperBound) / 2; // random demo stuff nvm
-  heatingPort.write("temperature-check");
-  String temperatureString = trim(heatingPort.readStringUntil('\n'));
-  float currentTemperature = float(temperatureString);
+  float currentTemperature = sin(frameCount * 0.01) * 15 + (heatLowerBound + heatUpperBound) / 2; // random demo stuff nvm
+  //heatingPort.write("temperature-check");
+  //String temperatureString = trim(heatingPort.readStringUntil('\n'));
+  //float currentTemperature = float(temperatureString);
   return currentTemperature;
 }
 
+void stirringUserControl () {
+  if (toggleStirring) {
+    float speedValue = speedSlider.getValue();
+    if (speedValue != prevSpeedValue) {
+      addConsoleMsg("changing speed from " + prevSpeedValue + " to " + speedValue);
+      if (changeStirringSpeed(speedValue) == true) {
+        addConsoleMsg("speed changed to " + speedValue);
+      }
+      else {
+        addConsoleMsg("Failed! Speed remains at " + prevSpeedValue);
+        speedSlider.setValue(prevSpeedValue);
+        speedValue = prevSpeedValue;
+      }
+    }
+    prevSpeedValue = speedValue;
+  }
+  if ((toggleStirring != prevToggleStirring) && (prevToggleStirring == false)) {
+    addConsoleMsg("started Stirring at time " + timer.toString());
+    startStirring();
+  }
+  if ((toggleStirring != prevToggleStirring) && (prevToggleStirring == true)) {
+    addConsoleMsg("stopped Stirring at time " + timer.toString());
+    endStirring();
+  }
+  prevToggleStirring = toggleStirring;
+}
+
 void startStirring () {
+  //stirringPort.write("start-stirring");
 }
 
 void endStirring () {
+  //stirringPort.write("end-stirring");
 }
 
 boolean changeStirringSpeed (float newStirringSpeed) {
-  // how to change stirring speed 
-  return true; // if successful return true otherwise return false
+  //stirringPort.write("change-speed"); 
+  //stirringPort.write(str(newStirringSpeed));
+  //String changeStatus = trim(stirringPort.readStringUntil('\n'));
+  //if (changeStatus == "true") return true;
+  //else return false; // if successful return true otherwise return false
+  return true;
 }
 
 float queryStirringSpeed () {
   float currentSpeed = sin(frameCount * 0.01) * 40 + (speedLowerBound + speedUpperBound) / 2; // random demo stuff nvm
-  //return value of stirring speed
+  //stirringPort.write("stirring-check");
+  //String speedString = trim(stirringPort.readStringUntil('\n'));
+  //float currentSpeed = float(speedString);
   return currentSpeed;
 }
 
