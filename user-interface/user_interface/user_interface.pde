@@ -41,6 +41,14 @@ Slider speedSlider;
 float prevSpeedValue;
 Chart speedChart;
 
+boolean togglePH;
+boolean prevTogglePH = false;
+Button addAcid;
+boolean prevAddAcid = false;
+Button addAkali;
+boolean prevAddAkali = false;
+Chart phChart;
+
 //declare sensor constants
 int queryGap = 50;
 int lastQueryTime = -50;
@@ -49,13 +57,16 @@ int lastQueryTime = -50;
 int heatLowerBound = 28;
 int heatUpperBound = 35;
 int heatAdjustInterval = 1;
-int speedLowerBound = 600;
-int speedUpperBound = 1400;
-int speedAdjustInterval = 400;
+int speedLowerBound = 500;
+int speedUpperBound = 1500;
+int speedAdjustInterval = 500;
+int phLowerBound = 3;
+int phUpperBound = 7;
 
 //declare Serial Port
-//Serial heatingPort = new Serial(this, "COM4", 9600);
-//Serial stirringPort = new Serial(this, "COM2", 9600);
+//Serial heatingPort = new Serial(this, "/dev/cu.usbmodem142301", 9600);
+Serial stirringPort = new Serial(this, "/dev/cu.usbmodem142401", 9600);
+Serial phPort = new Serial(this, "/dev/cu.usbmodem142301", 9600);
 
 void setup () {
   //init window
@@ -80,10 +91,12 @@ void setup () {
   //init buttons and controls
   initHeatingControls();
   initStirringControls();
+  initPHControls();
   
   //init graph
   initHeatingChart();
   initStirringChart();
+  initPHChart();
 }
 
 void initConsole() {
@@ -139,28 +152,59 @@ void initStirringControls () {
   prevSpeedValue = speedLowerBound;
 }
 
+void initPHControls () {
+  cp5.addToggle("togglePH")
+    .setValue(false)
+    .setPosition(initWidth + 10, textHeight + sectionHeight * 2 + 50)
+    .setSize(100, 100)
+    .setCaptionLabel("Toggle PH Control");
+  prevTogglePH = false;
+  addAcid = cp5.addButton("addAcid")
+    .setValue(0)
+    .setPosition(initWidth + 125, textHeight + sectionHeight * 2 + 50)
+    .setSize(75, 30)
+    .setCaptionLabel("Add Acid");
+  addAkali =cp5.addButton("addAkali")
+    .setValue(0)
+    .setPosition(initWidth + 125, textHeight + sectionHeight * 2 + 50 + 40)
+    .setSize(75, 30)
+    .setCaptionLabel("Add Akali");
+}
+
 void initHeatingChart () {
   temperatureChart = cp5.addChart("temperatureChart")
                         .setPosition(initWidth + 225, textHeight)
                         .setSize(700, sectionHeight - 50)
-                        .setRange(heatLowerBound - 20, heatUpperBound + 20)
+                        .setRange(heatLowerBound, heatUpperBound)
                         .setView(Chart.LINE)
                         .setCaptionLabel("")
                         .setStrokeWeight(10);
   temperatureChart.addDataSet("temperature");
-  temperatureChart.setData("temperature", heatLowerBound - 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  temperatureChart.setData("temperature", heatLowerBound, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 void initStirringChart () {
   speedChart = cp5.addChart("speedChart")
                         .setPosition(initWidth + 225, textHeight + sectionHeight)
                         .setSize(700, sectionHeight - 50)
-                        .setRange(speedLowerBound - 100, speedUpperBound + 100)
+                        .setRange(speedLowerBound, speedUpperBound)
                         .setView(Chart.LINE)
                         .setCaptionLabel("")
                         .setStrokeWeight(10);
   speedChart.addDataSet("speed");
-  speedChart.setData("speed", speedLowerBound - 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+  speedChart.setData("speed", speedLowerBound, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+}
+
+void initPHChart () {
+  phChart = cp5.addChart("phChart")
+                        .setPosition(initWidth + 225, textHeight + sectionHeight * 2)
+                        .setSize(700, sectionHeight - 50)
+                        .setRange(phLowerBound, phUpperBound)
+                        .setView(Chart.LINE)
+                        .setCaptionLabel("")
+                        .setStrokeWeight(10);
+  phChart.addDataSet("ph");
+  phChart.setData("ph", phLowerBound - 100, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
 void draw () {
@@ -188,21 +232,27 @@ void drawSensorData () {
   if (millis() - lastQueryTime > queryGap) {
       drawTemperatureSensorData();
       drawSpeedSensorData();
+      drawPHSensorData();
       lastQueryTime = millis();
   }
 }
 
 void drawTemperatureSensorData () {
-  temperatureChart.unshift("temperature", (int)queryHeatingTemperature());
+  temperatureChart.unshift("temperature", queryHeatingTemperature());
 }
 
 void drawSpeedSensorData () {
-  speedChart.unshift("speed", (int)queryStirringSpeed());
+  speedChart.unshift("speed", queryStirringSpeed());
+}
+
+void drawPHSensorData() {
+  phChart.unshift("ph", queryPH());
 }
 
 void monitorUserControl () {
   heatingUserControl();
   stirringUserControl();
+  phUserControl();
 }
 
 void heatingUserControl () {
@@ -250,7 +300,7 @@ boolean changeHeatingTemperature (float newTemperatureValue) {
 }
 
 float queryHeatingTemperature () {
-  float currentTemperature = sin(frameCount * 0.01) * 15 + (heatLowerBound + heatUpperBound) / 2; // random demo stuff nvm
+  float currentTemperature = sin(frameCount * 0.01) * 1.5 + (heatLowerBound + heatUpperBound) / 2; // random demo stuff nvm
   //heatingPort.write("temperature-check");
   //String temperatureString = trim(heatingPort.readStringUntil('\n'));
   //float currentTemperature = float(temperatureString);
@@ -262,7 +312,7 @@ void stirringUserControl () {
     float speedValue = speedSlider.getValue();
     if (speedValue != prevSpeedValue) {
       addConsoleMsg("changing speed from " + prevSpeedValue + " to " + speedValue);
-      if (changeStirringSpeed(speedValue) == true) {
+      if (changeStirringSpeed(speedValue)) {
         addConsoleMsg("speed changed to " + speedValue);
       }
       else {
@@ -293,30 +343,72 @@ void endStirring () {
 }
 
 boolean changeStirringSpeed (float newStirringSpeed) {
-  //stirringPort.write("change-speed"); 
-  //stirringPort.write(str(newStirringSpeed));
-  //String changeStatus = trim(stirringPort.readStringUntil('\n'));
-  //if (changeStatus == "true") return true;
-  //else return false; // if successful return true otherwise return false
+  stirringPort.write("change-speed\n"); 
+  stirringPort.write(str(newStirringSpeed) + "\n");
   return true;
 }
 
 float queryStirringSpeed () {
-  float currentSpeed = sin(frameCount * 0.01) * 40 + (speedLowerBound + speedUpperBound) / 2; // random demo stuff nvm
-  //stirringPort.write("stirring-check");
-  //String speedString = trim(stirringPort.readStringUntil('\n'));
-  //float currentSpeed = float(speedString);
+  //float currentSpeed = sin(frameCount * 0.01) * 40 + (speedLowerBound + speedUpperBound) / 2; // random demo stuff nvm
+  stirringPort.write("stirring-check\n");
+  String speedString = trim(stirringPort.readStringUntil('\n'));
+  float currentSpeed = speedLowerBound;
+  if (speedString != null) currentSpeed = float(speedString);
   return currentSpeed;
 }
 
+void phUserControl () {
+  if (togglePH) {
+    if (addAcid.isPressed() && !prevAddAcid) {
+      addConsoleMsg("add acid at time " + timer.toString());
+    } else if (addAcid.isPressed()) {
+      addAcid();
+    } else if (!addAcid.isPressed() && prevAddAcid) {
+      addConsoleMsg("add acid finished at time " + timer.toString());
+    }
+    prevAddAcid = addAcid.isPressed();
+    if (addAkali.isPressed() && !prevAddAkali) {
+      addConsoleMsg("add akali at time " + timer.toString());
+    } else if (addAkali.isPressed()) {
+      addAkali();
+    } else if (!addAkali.isPressed() && prevAddAkali) {
+      addConsoleMsg("add akali finished at time " + timer.toString());
+    }
+    prevAddAkali = addAkali.isPressed();
+  }
+  if ((togglePH != prevTogglePH) && (prevTogglePH == false)) {
+    addConsoleMsg("started pH module at time " + timer.toString());
+    startPH();
+  }
+  if ((togglePH != prevTogglePH) && (prevTogglePH == true)) {
+    addConsoleMsg("stopped pH module at time " + timer.toString());
+    endPH();
+  }
+  prevTogglePH = togglePH;
+}
+
+
 void startPH () {
+  phPort.write("start-ph\n");
 }
 
 void endPH () {
+  phPort.write("end-ph\n");
 }
   
-float readPHValue() {
+void addAcid() {
+  phPort.write("add-acid\n");
+}
+
+void addAkali () {
+  phPort.write("add-akali\n");
+}
+float queryPH() {
   // some way to read pHValue
-  float pHValue = 7;
-  return pHValue;
+  phPort.write("ph-check\n");
+  String phString = trim(phPort.readStringUntil('\n'));
+  println(phString);
+  float currentPH = phLowerBound;
+  if (phString != null) currentPH = float(phString);
+  return currentPH;
 }
