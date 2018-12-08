@@ -1,5 +1,6 @@
 String valString;
 String newSpeed;
+int newSpeedVal = 500;
 int data;
 
 void setup() {
@@ -20,27 +21,14 @@ void loop() {
     } else if (valString == "change-speed") {
       
       newSpeed = Serial.readStringUntil('\n');
-      int newSpeedVal = newSpeed.toInt();
-      
-      if (newSpeedVal == 500) {
+      newSpeedVal = newSpeed.toInt();
 
-        data = 29;
-        
-      } else if (newSpeedVal == 1000) {
-        
-        data = 42;
-        
-      } else if (newSpeedVal == 1500) {
-        
-        data = 52;
-        
-      }
-      
     } else if (valString == "stirring-check") {
       // return rpm
       
-      Serial.println("1000");
+      Serial.println(newSpeedVal);
       
     }
   }
+  delay (10);
 }
