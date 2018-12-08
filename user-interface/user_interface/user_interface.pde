@@ -407,7 +407,7 @@ float queryPH() {
   // some way to read pHValue
   phPort.write("ph-check\n");
   String phString = trim(phPort.readStringUntil('\n'));
-  println(phString);
+  //println(phString);
   float currentPH = phLowerBound;
   if (phString != null) currentPH = float(phString);
   return currentPH;
