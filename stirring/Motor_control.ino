@@ -34,13 +34,14 @@ void loop() {
     }
     else if(val == "change-speed"){
       newSpeed = Serial.readStringUntil('\n');
-      if (newSpeed.toInt()==500){
+      value = newSpeed.toInt();
+      if (value==500){
         data=29;
       }
-      else if (newSpeed.toInt()==1000){
+      else if (value==1000){
         data=42;
       }
-      else if (newSpeed.toInt()==1500){
+      else if (value==1500){
         data=52;
       }
     }
