@@ -1,5 +1,5 @@
 int thermistorPin = 0;
-int transistorPin = 13;
+int mosfetPin = 13;
 int pushButton = 5;
 int Vo;
 float R1 = 9940;
@@ -10,7 +10,7 @@ float c1 = 0.00180018234165587, c2 = 0.000125303859529376, c3 =5.10399949700750e
 void setup() {
 Serial.begin(9600);
 pinMode(thermistorPin, INPUT);
-pinMode(transistorPin, OUTPUT);
+pinMode(mosfetPin, OUTPUT);
 pinMode(pushButton, INPUT);
 pinMode(red, OUTPUT);
 }
@@ -43,11 +43,11 @@ float queryHeatingTemperature(){
 }
 
 void startHeating(){
-  digitalWrite(transistorPin, HIGH);
+  digitalWrite(mosfetPin, HIGH);
 }
 
 void endHeating(){
-  digitalWrite(transistorPin, LOW);
+  digitalWrite(mosfetPin, LOW);
 }
 
 boolean changeHeatingTemperature (float newTemperatureValue){
@@ -88,7 +88,7 @@ void mainControllerHeating () {
   else if (controlSignal == "start-heating"){
     startHeating();
   }
-  else if (controlSignal == "end-heating"){
+  else if (controlSignal == "stop-heating"){
     endHeating();
   }
 }
