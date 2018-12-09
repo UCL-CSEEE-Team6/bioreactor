@@ -1,3 +1,5 @@
+//http://www.circuitbasics.com/arduino-thermistor-temperature-sensor-tutorial/
+
 int thermistorPin = 0;
 int mosfetPin = 13;
 int pushButton = 5;
