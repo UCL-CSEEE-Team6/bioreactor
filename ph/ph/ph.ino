@@ -34,11 +34,11 @@ void loop() {
   // put your main code here, to run repeatedly:
   char str;
   int phY=analogRead(ph);
-  Serial.print("phY");
-  Serial.println(phY);
+  //Serial.print("phY");
+  //Serial.println(phY);
   /*if (phY>50)*/ phv=phY;
-  Serial.print("phv");
-  Serial.println(phv);
+  //Serial.print("phv");
+  //Serial.println(phv);
   float Ex = phv*5000.0/1023;
   //int T = getTemp(analogRead(tmp)); //This will get information from Temperature Team
   float T=293.15;
@@ -46,17 +46,17 @@ void loop() {
   Serial.println(T);
   float ln = log(10)/log(2.71828);
   float phX = phS + ((1/2*Es-Ex)*0.001*F)/(R*T*ln);
-  Serial.print("ph:");
+  //Serial.print("ph:");
   Serial.println(phX);
   str=Serial.read();
-  if (str==' ' || phX >= 5.5) acid=true;
-  if (str==' ' && phX <= 5.2) acid=false;
-  if (str==' ' || phX <= 4.5) alkali=true;
-  if (str==' ' && phX >= 4.8) alkali=false;
-  Serial.print("acid:");
-  Serial.println(acid);
-  Serial.print("alkali:");
-  Serial.println(alkali);
+  if (/*str==' ' ||*/ phX >= 5.5) acid=true;
+  if (/*str==' ' &&*/ phX <= 5.2) acid=false;
+  if (/*str==' ' ||*/ phX <= 4.5) alkali=true;
+  if (/*str==' ' &&*/ phX >= 4.8) alkali=false;
+  //Serial.print("acid:");
+  //Serial.println(acid);
+  //Serial.print("alkali:");
+  //Serial.println(alkali);
   if (acid==true) digitalWrite(pump1,HIGH);
   if (acid==false) digitalWrite(pump1,LOW);
   if (alkali==true) digitalWrite(pump2,HIGH);
