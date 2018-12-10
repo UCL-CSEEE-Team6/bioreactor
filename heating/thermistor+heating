@@ -14,18 +14,15 @@ Serial.begin(9600);
 pinMode(thermistorPin, INPUT);
 pinMode(mosfetPin, OUTPUT);
 pinMode(pushButton, INPUT);
-pinMode(red, OUTPUT);
 }
 
-void loop() {
-  mainControllerHeating();
-//Check whether to turn on the heater
-  if((temperature <= 28.00) || (digitalRead(pushButton) == HIGH)){
-    startHeating();
-  }
-  else if(temperature >= 32.00){
-    endHeating();
-  }
+
+void startHeating(){
+  digitalWrite(mosfetPin, HIGH);
+}
+
+void endHeating(){
+  digitalWrite(mosfetPin, LOW);
 }
 
 double getTemperature(){
@@ -44,16 +41,9 @@ float queryHeatingTemperature(){
   return currentTemperature;
 }
 
-void startHeating(){
-  digitalWrite(mosfetPin, HIGH);
-}
 
-void endHeating(){
-  digitalWrite(mosfetPin, LOW);
-}
 
 boolean changeHeatingTemperature (float newTemperatureValue){
-  queryHeatingTemperature();
   while (newTemperatureValue > queryHeatingTemperature()){
     startHeating();
   }
@@ -67,6 +57,36 @@ boolean changeHeatingTemperature (float newTemperatureValue){
     return false;
   }
 }
+
+
+void loop() {
+//Check whether to turn on the heater
+  if((temperature <= 28.00) || (digitalRead(pushButton) == HIGH)){
+    startHeating();
+  }
+  else if(temperature >= 30.50){
+    endHeating();
+  }
+
+  String controlSignal;
+  String newTemperature;
+  int newTempVal;
+  if (Serial.available() > 0) {
+    controlSignal = Serial.readStringUntil('\n');
+    if (controlSignal == "change-temperature") {
+      newTemperature = Serial.readStringUntil('\n');
+      newTempVal = newTemperature.toInt();
+      changeHeatingTemperature(newTempVal);
+    } else if (controlSignal == "temperature-check") {
+      Serial.print(queryHeatingTemperature());
+    } else if (controlSignal == "start-heating"){
+      startHeating();
+    } else if (controlSignal == "stop-heating"){
+      endHeating();
+  }
+ }
+}
+
 
 void mainControllerHeating () {
   String controlSignal;
