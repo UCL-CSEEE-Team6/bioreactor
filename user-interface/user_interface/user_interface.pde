@@ -64,7 +64,7 @@ int phLowerBound = 3;
 int phUpperBound = 7;
 
 //declare Serial Port
-//Serial heatingPort = new Serial(this, "/dev/cu.usbmodem142301", 9600);
+Serial heatingPort = new Serial(this, "/dev/cu.usbmodem142301", 9600);
 Serial stirringPort = new Serial(this, "/dev/cu.usbmodem142401", 9600);
 Serial phPort = new Serial(this, "/dev/cu.usbmodem142301", 9600);
 
@@ -260,7 +260,7 @@ void heatingUserControl () {
     float temperatureValue = temperatureSlider.getValue();
     if (temperatureValue != prevTemperatureValue) {
       addConsoleMsg("changing temperature from " + prevTemperatureValue + " to " + temperatureValue);
-      if (changeHeatingTemperature(temperatureValue) == true) {
+      if (changeHeatingTemperature(temperatureValue)) {
         addConsoleMsg("temperature changed to " + temperatureValue);
       }
       else {
@@ -283,16 +283,16 @@ void heatingUserControl () {
 }
 
 void startHeating () {
-  //heatingPort.write("start-heating");
+  heatingPort.write("start-heating\n");
 }
 
 void endHeating () {
-  //heatingPort.write("stop-heating");
+  heatingPort.write("stop-heating\n");
 }
 
 boolean changeHeatingTemperature (float newTemperatureValue) {
-  //heatingPort.write("change-temperature");
-  //heatingPort.write(str(newTemperatureValue));
+  heatingPort.write("change-temperature\n");
+  heatingPort.write(str(newTemperatureValue) + '\n');
   //String changeStatus = trim(heatingPort.readStringUntil('\n'));
   //if (changeStatus == "true") return true;
   //else return false; // if changing temperature successful return true otherwise return false
@@ -300,10 +300,11 @@ boolean changeHeatingTemperature (float newTemperatureValue) {
 }
 
 float queryHeatingTemperature () {
-  float currentTemperature = sin(frameCount * 0.01) * 1.5 + (heatLowerBound + heatUpperBound) / 2; // random demo stuff nvm
-  //heatingPort.write("temperature-check");
-  //String temperatureString = trim(heatingPort.readStringUntil('\n'));
-  //float currentTemperature = float(temperatureString);
+  //float currentTemperature = sin(frameCount * 0.01) * 1.5 + (heatLowerBound + heatUpperBound) / 2; // random demo stuff nvm
+  heatingPort.write("temperature-check\n");
+  String temperatureString = trim(heatingPort.readStringUntil('\n'));
+  float currentTemperature = heatLowerBound;
+  if (temperatureString != null) currentTemperature = float(temperatureString);
   return currentTemperature;
 }
 
@@ -335,11 +336,11 @@ void stirringUserControl () {
 }
 
 void startStirring () {
-  //stirringPort.write("start-stirring");
+  stirringPort.write("start-stirring\n");
 }
 
 void endStirring () {
-  //stirringPort.write("end-stirring");
+  stirringPort.write("end-stirring\n");
 }
 
 boolean changeStirringSpeed (float newStirringSpeed) {
