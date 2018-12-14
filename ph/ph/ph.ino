@@ -1,4 +1,5 @@
 #include <math.h>
+#include <string.h>
 const int ph=A5; //This will be info from analog ph
 const int phS=7; //ph of standard solution
 const float Es=512.0;  //Electrical potential at reference or standard electrode
@@ -7,11 +8,12 @@ const float R=8.314510; //universal gas constant
 const int pump1=13; //pinNum of pump for acid
 const int pump2=12; //pinNum of pump for alkali
 const int voltageSupply=11; //pinNum of voltage supply of 1.024V
-#define tmp 1 //pinNum for temperature input
+const int tmp = A1; //pinNum for temperature input
 
 bool acid;
 bool alkali;
 int phv;
+String str;
 
 void setup() {
   // put your setup code here, to run once:
@@ -32,16 +34,13 @@ double getTemp(int i)
 
 void loop() {
   // put your main code here, to run repeatedly:
-  char str[]="add-alkali";
   phv=analogRead(ph);
   float Ex = phv*5000.0/1023;
-  //int T = getTemp(analogRead(tmp)); //This will get information from Temperature Team
-  float T=298.15;
-  Serial.print("temp:");
-  Serial.println(T);
+  int T = getTemp(analogRead(tmp)); //This will get information from Temperature Team
   float ln = log(10)/log(2.71828);
-  float phX = phS + ((1/2*Es-Ex)*0.001*F)/(R*T*ln);
-  Serial.println(phX);
+  float phX = phS + ((Es-Ex)*0.001*F)/(R*T*ln);
+  str=Serial.readString();
+  if (str=="ph-check") Serial.println(phX);
   str=Serial.read();
   if (str=="add-acid" || phX >= 5.5) acid=true;
   if (phX <= 5.2) acid=false;
