@@ -36,7 +36,7 @@ void loop() {
       newSpeed = Serial.readStringUntil('\n');
       value = newSpeed.toInt();
       if (value==500){
-        data=29;
+        data=28;
       }
       else if (value==1000){
         data=42;
@@ -49,27 +49,26 @@ void loop() {
       Serial.println(realrpm);
     }
   }
- /* if (realrpm > (value+20)){
+  if (realrpm > (value+20)){
     data = data - 1;
   }
   else if (realrpm < (value-20)){
     data = data + 1;
-  }*/
-  if (count >= 30){
+  }
+  /*if (count >= 30){
     rpm = count/(millis()-timeold)*60*1000;
     timeold = millis();
     count = 0;
-    realrpm=1.93*rpm;
-    //Serial.println(realrpm);
-  }
-  /*if(millis()-timeold==1000){
+    realrpm=rpm;
+  }*/
+  if(millis()-timeold==1000){
     detachInterrupt(interruptPin);
     rpm=count*60;
     count=0;
     timeold = millis();
-    realrpm=1.93*rpm;
+    realrpm=rpm;
     attachInterrupt(digitalPinToInterrupt(interruptPin),counts,FALLING);
-  }*/
+  }
 }
 
 void counts()
