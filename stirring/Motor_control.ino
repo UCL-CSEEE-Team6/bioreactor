@@ -3,7 +3,6 @@ double count;
 const byte interruptPin = 2;
 unsigned long timeold;
 unsigned int rpm;
-unsigned int realrpm;
 int data;
 int value;
 String val;
@@ -17,7 +16,6 @@ void setup() {
   rpm = 0;
   timeold = 0;
   count = 0;
-  realrpm = 0;
   data = 0;
 }
 
@@ -36,7 +34,7 @@ void loop() {
       newSpeed = Serial.readStringUntil('\n');
       value = newSpeed.toInt();
       if (value==500){
-        data=29;
+        data=28;
       }
       else if (value==1000){
         data=42;
@@ -46,30 +44,27 @@ void loop() {
       }
     }
     else if (val == "stirring-check" ){
-      Serial.println(realrpm);
+      Serial.println(rpm);
     }
   }
- /* if (realrpm > (value+20)){
+  if (rpm > (value+20)){
     data = data - 1;
   }
-  else if (realrpm < (value-20)){
+  else if (rpm < (value-20)){
     data = data + 1;
-  }*/
-  if (count >= 30){
+  }
+  /*if (count >= 30){
     rpm = count/(millis()-timeold)*60*1000;
     timeold = millis();
     count = 0;
-    realrpm=1.93*rpm;
-    //Serial.println(realrpm);
-  }
-  /*if(millis()-timeold==1000){
+  }*/
+  if(millis()-timeold==1000){
     detachInterrupt(interruptPin);
     rpm=count*60;
     count=0;
     timeold = millis();
-    realrpm=1.93*rpm;
     attachInterrupt(digitalPinToInterrupt(interruptPin),counts,FALLING);
-  }*/
+  }
 }
 
 void counts()
